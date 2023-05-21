@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Vector;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.DispatcherType;
@@ -514,13 +513,11 @@ public class HttpServletRequestStub implements HttpServletRequest {
 		return Locale.ENGLISH;
 	}
 
-    public Enumeration getLocales() {
-        Enumeration locales;
-        Vector localeName = new Vector();
-        localeName.add(Locale.ENGLISH);
-        localeName.add(Locale.CANADA_FRENCH);
-        locales = localeName.elements();
-        return locales;
+	@Override
+	@SuppressWarnings("rawtypes")
+	public Enumeration getLocales() {
+		throw new RuntimeException(
+				"HttpServletRequestStub.getLocales() not implemented.");
 	}
 
 	@Override
