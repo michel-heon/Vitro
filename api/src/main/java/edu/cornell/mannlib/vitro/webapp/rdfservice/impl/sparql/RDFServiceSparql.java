@@ -246,6 +246,19 @@ public class RDFServiceSparql extends RDFServiceImpl implements RDFService {
 		}
 	}
 
+	public void sparqlDescribeQuery(String queryStr, Model model) throws RDFServiceException {
+
+        Query query = createQuery(queryStr);
+        QueryExecution qe = QueryExecutionFactory.sparqlService(readEndpointURI, query);
+
+        try {
+            qe.execDescribe(model);
+        } catch (Exception e) {
+            log.error("Error executing DESCRIBE against remote endpoint: " + queryStr);
+        } finally {
+            qe.close();
+        }
+    }
 	/**
 	 * Performs a SPARQL describe query against the knowledge base. The query may have
 	 * an embedded graph identifier.

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.jena.ontology.OntModel;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
@@ -27,7 +28,7 @@ import edu.cornell.mannlib.vitro.webapp.rdfservice.ResultSetConsumer;
 
 
 public class IndividualBufferedSDB extends IndividualSDB {
-    private String indvGraphSparqlQuery = "PREFIX rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+    private String indvGraphSparqlQuery_deprecated = "PREFIX rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
             + "PREFIX rdfs:     <http://www.w3.org/2000/01/rdf-schema#>\n"
             + "PREFIX xsd:      <http://www.w3.org/2001/XMLSchema#>\n"
             + "PREFIX owl:      <http://www.w3.org/2002/07/owl#>\n"
@@ -54,13 +55,79 @@ public class IndividualBufferedSDB extends IndividualSDB {
             + "PREFIX vivo:     <http://vivoweb.org/ontology/core#>\n"
             + "PREFIX scires:   <http://vivoweb.org/ontology/scientific-research#>\n"
             + "DESCRIBE <__INDIVIDUAL_IRI__> ?i1 ?i2 \n" 
-            + " where {\n" + "  <__INDIVIDUAL_IRI__> ?p1 ?i1 \n"
-            + "  FILTER(regex(str(?i1), \"individual\" )) \n"
-            + "  ?i1 ?p2 ?i2 .\n"
-            + "  FILTER(regex(str(?i2), \"individual\" )) \n" 
-            + "}";
+            + " where {\n" 
+            + "  OPTIONAL { \n"
+            + "     <__INDIVIDUAL_IRI__> ?p1 ?i1 \n"
+            + "     FILTER(regex(str(?i1), \"individual\" )) \n"
+            + "         OPTIONAL { \n"
+            + "             ?i1 ?p2 ?i2 .\n"
+            + "             FILTER(regex(str(?i2), \"individual\" )) \n" 
+            + " } } }";
 
-
+private String indvGraphSparqlQuery=
+        "PREFIX rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+        + "PREFIX rdfs:     <http://www.w3.org/2000/01/rdf-schema#> \n"
+        + "PREFIX xsd:      <http://www.w3.org/2001/XMLSchema#>\n"
+        + "PREFIX owl:      <http://www.w3.org/2002/07/owl#>\n"
+        + "PREFIX swrl:     <http://www.w3.org/2003/11/swrl#>\n"
+        + "PREFIX swrlb:    <http://www.w3.org/2003/11/swrlb#>\n"
+        + "PREFIX vitro:    <http://vitro.mannlib.cornell.edu/ns/vitro/0.7#>\n"
+        + "PREFIX c4o:      <http://purl.org/spar/c4o/>\n"
+        + "PREFIX cito:     <http://purl.org/spar/cito/>\n"
+        + "PREFIX event:    <http://purl.org/NET/c4dm/event.owl#>\n"
+        + "PREFIX fabio:    <http://purl.org/spar/fabio/>\n"
+        + "PREFIX foaf:     <http://xmlns.com/foaf/0.1/>\n"
+        + "PREFIX dcterms:  <http://purl.org/dc/terms/>\n"
+        + "PREFIX vann:     <http://purl.org/vocab/vann/>\n"
+        + "PREFIX swo:      <http://www.ebi.ac.uk/efo/swo/>\n"
+        + "PREFIX obo:      <http://purl.obolibrary.org/obo/>\n"
+        + "PREFIX bibo:     <http://purl.org/ontology/bibo/>\n"
+        + "PREFIX geo:      <http://aims.fao.org/aos/geopolitical.owl#>\n"
+        + "PREFIX ocresd:   <http://purl.org/net/OCRe/study_design.owl#>\n"
+        + "PREFIX ocrer:    <http://purl.org/net/OCRe/research.owl#>\n"
+        + "PREFIX ro:       <http://purl.obolibrary.org/obo/ro.owl#>\n"
+        + "PREFIX skos:     <http://www.w3.org/2004/02/skos/core#>\n"
+        + "PREFIX ocresst:  <http://purl.org/net/OCRe/statistics.owl#>\n"
+        + "PREFIX ocresp:   <http://purl.org/net/OCRe/study_protocol.owl#>\n"
+        + "PREFIX vcard:    <http://www.w3.org/2006/vcard/ns#>\n"
+        + "PREFIX vitrofrca:       <http://vivoweb.org/ontology/vitroAnnotfr_CA#>\n"
+        + "PREFIX vitro-public: <http://vitro.mannlib.cornell.edu/ns/vitro/public#>\n"
+        + "PREFIX vivo:     <http://vivoweb.org/ontology/core#>\n"
+        + "PREFIX scires:   <http://vivoweb.org/ontology/scientific-research#>\n"
+        + "CONSTRUCT {\n"
+        + "    ?uri ?p ?o .\n"
+        + "    ?mainImage vitro-public:filename ?o_mainImage .\n"
+        + "    ?thumbnailImage  vitro-public:filename ?o_thumbnailfilename .\n"
+        + "    ?thumbnailImage  vitro-public:downloadLocation ?o_thumbnailLocation .\n"
+        + "    ?most ?p_most ?o_most .\n"
+        + "    ?vIndividual vcard:hasTitle ?vTitle . \n"
+        + "    ?vTitle vcard:title ?pt . \n"
+        + "}\n"
+        + "where {\n"
+        + "    BIND ( <__INDIVIDUAL_IRI__> AS ?uri) .\n"
+        + "    ?uri ?p ?o .\n"
+        + "    FILTER ( ! STRENDS( STR(?p), \"hasResearchArea\") ) .\n"
+        + "    FILTER ( ! STRENDS( STR(?p), \"relatedBy\") ) .\n"
+        + "    FILTER ( ! STRENDS( STR(?p), \"researchAreaOf\") ) .\n"
+        + "    OPTIONAL {\n"
+        + "        ?uri vitro-public:mainImage ?mainImage .\n"
+        + "        OPTIONAL {\n"
+        + "            ?mainImage  vitro-public:thumbnailImage ?thumbnailImage .\n"
+        + "            ?thumbnailImage  vitro-public:filename ?o_thumbnailfilename .\n"
+        + "            ?thumbnailImage  vitro-public:downloadLocation ?o_thumbnailLocation .\n"
+        + "        }\n"
+        + "        ?mainImage vitro-public:filename ?o_mainImage .\n"
+        + "    }\n"
+        + "    OPTIONAL {\n"
+        + "        ?uri  obo:ARG_2000028 ?vIndividual .  \n"
+        + "        ?vIndividual vcard:hasTitle ?vTitle . \n"
+        + "        ?vTitle vcard:title ?pt . \n"
+        + "    }\n"
+        + "    OPTIONAL {\n"
+        + "        ?uri vitro:mostSpecificType ?most .\n"
+        + "        ?most ?p_most ?o_most .\n"
+        + "    }\n"
+        + "}";
 //    private OntModel _buffOntModel = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM);
     private static final Log log = LogFactory.getLog(IndividualBufferedSDB.class.getName());    
 
@@ -92,8 +159,7 @@ public class IndividualBufferedSDB extends IndividualSDB {
             _individualJenaResource = ResourceFactory.createResource(individualURI);
             String _query = indvGraphSparqlQuery.replace("__INDIVIDUAL_IRI__", individualUri);
             log.debug(_query);
-            webappDaoFactory.getRDFService().sparqlConstructQuery(
-                    indvGraphSparqlQuery.replace("__INDIVIDUAL_IRI__", individualUri), _buffOntModel);
+            webappDaoFactory.getRDFService().sparqlConstructQuery(_query, _buffOntModel);
 //            RDFDataMgr.write(System.out, _buffOntModel, Lang.TURTLE);
             
             _jenaDaoFact = (new WebappDaoFactoryJena(_buffOntModel));
@@ -133,5 +199,8 @@ public class IndividualBufferedSDB extends IndividualSDB {
     public String getThumbUrl() {
         populateIndividualBufferModel();
         return _individualJena.getThumbUrl();
+    }
+    public OntModel getBuffOntModel() {
+        return this._buffOntModel;
     }
 }

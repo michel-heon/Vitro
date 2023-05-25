@@ -57,6 +57,13 @@ public class LoggingRDFService implements RDFService {
 		}
 	}
 
+    @Override
+    public void sparqlDescribeQuery(String queryStr, Model model) throws RDFServiceException {
+        try (RDFServiceLogger l = new RDFServiceLogger(queryStr)) {
+            innerService.sparqlDescribeQuery(queryStr, model);
+        }
+    }
+
 	@Override
 	public InputStream sparqlDescribeQuery(String query,
 			ModelSerializationFormat resultFormat) throws RDFServiceException {

@@ -17,7 +17,6 @@ import org.apache.commons.logging.LogFactory;
 import edu.cornell.mannlib.vitro.webapp.beans.Individual;
 import edu.cornell.mannlib.vitro.webapp.controller.VitroRequest;
 import edu.cornell.mannlib.vitro.webapp.dao.jena.IndividualBufferedSDB;
-import edu.cornell.mannlib.vitro.webapp.dao.jena.IndividualSDBBuffered;
 import edu.cornell.mannlib.vitro.webapp.services.freemarker.FreemarkerProcessingService;
 import edu.cornell.mannlib.vitro.webapp.services.freemarker.FreemarkerProcessingService.TemplateParsingException;
 import edu.cornell.mannlib.vitro.webapp.services.freemarker.FreemarkerProcessingService.TemplateProcessingException;

@@ -88,6 +88,19 @@ public class LanguageFilteringRDFService implements RDFService {
             model.add(constructedModel);
         }
     }
+    @Override
+    public void sparqlDescribeQuery(String queryStr, Model model) throws RDFServiceException {
+        if (model.isEmpty()) {
+            s.sparqlDescribeQuery(queryStr, model);
+            filterModel.filterModel(model, langs);
+        } else {
+            Model constructedModel = ModelFactory.createDefaultModel();
+            s.sparqlDescribeQuery(queryStr, constructedModel);
+            filterModel.filterModel(constructedModel, langs);
+            model.add(constructedModel);
+        }
+        
+    }
 
     @Override
     public InputStream sparqlDescribeQuery(String query,
@@ -458,6 +471,7 @@ public class LanguageFilteringRDFService implements RDFService {
 	public VitroRequest getVitroRequest() {
 		return vitroRequest;
 	}
+
 
 }
 

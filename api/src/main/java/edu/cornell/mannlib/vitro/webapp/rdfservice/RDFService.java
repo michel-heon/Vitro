@@ -271,4 +271,7 @@ public interface RDFService {
      */
 	public void setVitroRequest(VitroRequest vitroRequest);
 	public VitroRequest getVitroRequest();
+
+    void sparqlDescribeQuery(String queryStr, Model model) throws RDFServiceException;
+
 }

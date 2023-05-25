@@ -316,6 +316,12 @@ public class SameAsFilteringRDFServiceFactory implements RDFServiceFactory {
             s.close();
         }
 
+        @Override
+        public void sparqlDescribeQuery(String queryStr, Model model) throws RDFServiceException {
+            // TODO Auto-generated method stub
+            
+        }
+
 
     }
 

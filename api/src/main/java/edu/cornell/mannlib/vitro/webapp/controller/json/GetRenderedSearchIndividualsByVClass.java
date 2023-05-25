@@ -140,10 +140,11 @@ public class GetRenderedSearchIndividualsByVClass extends GetSearchIndividualsBy
 //    }
 //    
 //    private String renderShortView(String individualUri, String vclassName) {
-	/**
-	 * Look through the return object. For each individual, render the short
-	 * view and insert the resulting HTML into the object.
-	 */
+
+	   /**
+     * Look through the return object. For each individual, render the short
+     * view and insert the resulting HTML into the object.
+     */
     private void addShortViewRenderings(ObjectNode rObj) {
 //        LogManager.getRootLogger().setLevel(Level.DEBUG);
         ArrayNode individuals = (ArrayNode) rObj.get("individuals");
@@ -162,15 +163,71 @@ public class GetRenderedSearchIndividualsByVClass extends GetSearchIndividualsBy
         Instant d2 = Instant.now();
         long totalTime = ChronoUnit.MILLIS.between(d1, d2);
 //        LogManager.getRootLogger().setLevel(Level.INFO);
-        log.info("ANALYSER: total indv:(" + totalIndv + 
-                ") total time (sec.):(" + totalTime / 1000.0 + 
-                ") avrg time (sec.): " + (totalTime / totalIndv) / 1000.0);
+        try {
+            log.info("ANALYSER: total indv:(" + totalIndv + 
+                    ") total time (sec.):(" + totalTime / 1000.0 + 
+                    ") avrg time (sec.): " + (totalTime / totalIndv) / 1000.0);           
+        } catch (Exception e) {
+            log.info("ANALYSER: total indv:(" + totalIndv + 
+                    ") total time (sec.):(" + totalTime / 1000.0 +") ");           
+        }
+    }
+    private void _addShortViewRenderings(ObjectNode rObj) {
+        ArrayNode individuals = (ArrayNode) rObj.get("individuals");
+        String vclassName = rObj.get("vclass").get("name").asText();
+        int indvSize = individuals.size();
+        ExecutorService es = Executors.newFixedThreadPool(indvSize);
+        Instant d1 = Instant.now();
+        for (int i = 0; i < indvSize; i++) {
+               ObjectNode individual = (ObjectNode) individuals.get(i);
+               ProcessIndividual pi = new ProcessIndividual();
+               pi.setIndividual(individual);
+               pi.setVclassName(vclassName);
+               es.execute(pi);
+        }
+        es.shutdown();
+        try {
+            while(!es.awaitTermination(10, TimeUnit.MILLISECONDS)){
+            }
+        } catch (InterruptedException e1) {
+        }
+        Instant d2 = Instant.now();
+        long totalTime = ChronoUnit.MILLIS.between(d1, d2);
+        try {
+            log.info("ANALYSER: total indv:(" + indvSize + 
+                    ") total time (sec.):(" + totalTime / 1000.0 + 
+                    ") avrg time (sec.): " + (totalTime / indvSize) / 1000.0);           
+        } catch (Exception e) {
+            log.info("ANALYSER: total indv:(" + indvSize + 
+                    ") total time (sec.):(" + totalTime / 1000.0 +") ");           
+        }
+    }
+    /*
+     * The runnable class that executes the renderShortView 
+     */
+    private class ProcessIndividual implements Runnable {
+        private ObjectNode individual = null;
+        private String vclassName;
+        public String getVclassName() {
+            return vclassName;
+        }
+        public void setVclassName(String vclassName) {
+            this.vclassName = vclassName;
+        }
+        // Method
+        public void run() {
+            individual.put("shortViewHtml", renderShortView(individual.get("URI").asText(), vclassName));
+        }
+        public void setIndividual(ObjectNode individual) {
+            this.individual = individual;
+        }
     }
 
-	private String renderShortView(String individualUri, String vclassName) {
-//        Instant t1 = Instant.now();
+	protected String renderShortView(String individualUri, String vclassName) {
+	    log.debug("start :"+individualUri);
+ //       Instant t1 = Instant.now();
 		IndividualDao iDao = vreq.getBufferedIndividualWebappDaoFactory().getIndividualDao();
-//        Instant t2 = Instant.now();
+ //       Instant t2 = Instant.now();
 		Individual individual = iDao.getIndividualByURI(individualUri);
 //        log.info("toString "+ individual);
 //        Instant t3 = Instant.now();
@@ -183,16 +240,19 @@ public class GetRenderedSearchIndividualsByVClass extends GetSearchIndividualsBy
 		ShortViewService svs = ShortViewServiceSetup.getService(ctx);
 		
 //        Instant t5 = Instant.now();
+//        LogManager.getRootLogger().setLevel(Level.DEBUG);
+
 		String rsv = svs.renderShortView(individual, ShortViewContext.BROWSE,modelMap, vreq);
+//        LogManager.getRootLogger().setLevel(Level.INFO);
 //        Instant t6 = Instant.now();
 //        log.info("toString "+ individual);
 //        log.info("ANALYSER: "+
-//        " total-renderShortView="+ChronoUnit.MILLIS.between(t5,t6)+ 
-//        " total-iDao="+ChronoUnit.MILLIS.between(t1,t2)+ 
-//        " total-modelMap="+ChronoUnit.MILLIS.between(t3,t4)+ 
-//        " total-ShortViewService="+ChronoUnit.MILLIS.between(t4,t5)+ 
-//        " total="+ChronoUnit.MILLIS.between(t1,t6) 
-//        );
+//        " total-renderShortView="+ChronoUnit.MILLIS.between(t5,t6)/1000.0+ 
+//        " total-iDao="+ChronoUnit.MILLIS.between(t1,t2)/1000.0+ 
+//        " total-modelMap="+ChronoUnit.MILLIS.between(t3,t4)/1000.0+ 
+//        " total-ShortViewService="+ChronoUnit.MILLIS.between(t4,t5)/1000.0+ 
+//        " total="+ChronoUnit.MILLIS.between(t1,t6)/1000.0);
+	      log.debug("END :"+individualUri);
 		return rsv;
 	}
 }

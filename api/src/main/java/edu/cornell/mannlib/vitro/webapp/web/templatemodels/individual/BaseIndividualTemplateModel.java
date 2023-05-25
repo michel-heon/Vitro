@@ -33,6 +33,7 @@ import edu.cornell.mannlib.vitro.webapp.controller.freemarker.UrlBuilder.Route;
 import edu.cornell.mannlib.vitro.webapp.dao.ObjectPropertyStatementDao;
 import edu.cornell.mannlib.vitro.webapp.dao.VClassDao;
 import edu.cornell.mannlib.vitro.webapp.dao.WebappDaoFactory;
+import edu.cornell.mannlib.vitro.webapp.dao.jena.IndividualBufferedSDB;
 import edu.cornell.mannlib.vitro.webapp.reasoner.SimpleReasoner;
 import edu.cornell.mannlib.vitro.webapp.web.templatemodels.BaseTemplateModel;
 
@@ -169,9 +170,10 @@ public abstract class BaseIndividualTemplateModel extends BaseTemplateModel {
 		}
 
     public Collection<String> getMostSpecificTypes() {
-        ObjectPropertyStatementDao opsDao = vreq.getWebappDaoFactory().getObjectPropertyStatementDao();
-        Map<String, String> types = opsDao.getMostSpecificTypesInClassgroupsForIndividual(getUri());
-        return types.values();
+//        ObjectPropertyStatementDao opsDao = vreq.getWebappDaoFactory().getObjectPropertyStatementDao();
+//        Map<String, String> types = opsDao.getMostSpecificTypesInClassgroupsForIndividual(getUri());
+        List<String> types = individual.getMostSpecificTypeURIs();
+        return types;
     }
 
     public String getUri() {
