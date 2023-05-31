@@ -273,5 +273,18 @@ public interface RDFService {
 	public VitroRequest getVitroRequest();
 
     void sparqlDescribeQuery(String queryStr, Model model) throws RDFServiceException;
+    /**
+     * Performs a SPARQL query on the knowledge base. The query may contain an embedded 
+     * graph identifier. If the query does not contain a graph identifier, the query is 
+     * executed on the union of all named and unnamed graphs in the store knowledge base. 
+     * 
+     * The filter indicates whether linguistic processing is applied to the identified literals.
+     * 
+     * @param query
+     * @param model
+     * @param withFilter
+     * @throws RDFServiceException
+     */
+    void sparqlConstructQuery(String query, Model model, boolean withFilter) throws RDFServiceException;
 
 }

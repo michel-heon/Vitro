@@ -101,7 +101,12 @@ public class RDFServiceFactorySingle implements RDFServiceFactory {
                 throws RDFServiceException {
             s.sparqlConstructQuery(query, model);
         }
-        
+        @Override
+        public void sparqlConstructQuery(String query, Model model, boolean withFilter) 
+                throws RDFServiceException {
+           s.sparqlConstructQuery( query,  model,  withFilter);
+        }
+      
         @Override
         public void sparqlDescribeQuery(String queryStr, Model model) throws RDFServiceException {
             s.sparqlDescribeQuery(queryStr, model);
@@ -238,6 +243,7 @@ public class RDFServiceFactorySingle implements RDFServiceFactory {
         public VitroRequest getVitroRequest() {
             return vitroRequest;
         }
+
 
     }
 

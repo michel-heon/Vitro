@@ -66,16 +66,16 @@ public class IndividualDaoSDB extends IndividualDaoJena {
     }
 
     protected DatasetWrapper getDatasetWrapper() {
-    	return dwf.getDatasetWrapper();
+    	return getDwf().getDatasetWrapper();
     }
 
     protected Individual makeIndividual(String individualURI) {
         try {
             Individual anIndividual;
             if (wadf.config.getIndividualsTreatmentOption() == ModelAccess.BUFFERED_TREATMENT)
-                anIndividual = new IndividualBufferedSDB(individualURI, this.dwf, datasetMode, wadf);
+                anIndividual = new IndividualBufferedSDB(individualURI, this, datasetMode, wadf);
             else
-                anIndividual = new IndividualSDB(individualURI, this.dwf, datasetMode, wadf);
+                anIndividual = new IndividualSDB(individualURI, this.getDwf(), datasetMode, wadf);
             return anIndividual;
         } catch (IndividualNotFoundException e) {
             // If the individual does not exist, return null.
@@ -290,7 +290,7 @@ public class IndividualDaoSDB extends IndividualDaoJena {
 
     private Individual makeIndividual(String uri, String label) throws IndividualNotFoundException {
         Individual ent = new IndividualSDB(uri,
-                this.dwf, datasetMode, wadf,
+                this.getDwf(), datasetMode, wadf,
                 SKIP_INITIALIZATION);
         ent.setName(label);
 		ent.setRdfsLabel(label);
@@ -548,6 +548,10 @@ public class IndividualDaoSDB extends IndividualDaoJena {
             getOntModel().leaveCriticalSection();
         }
         return individualURIs.iterator();
+    }
+
+    public DatasetWrapperFactory getDwf() {
+        return dwf;
     }
 
 }

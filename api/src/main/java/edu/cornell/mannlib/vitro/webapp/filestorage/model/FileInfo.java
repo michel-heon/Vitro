@@ -124,8 +124,9 @@ public class FileInfo {
 
 		String bytestreamAliasUrl = findBytestreamAliasUrl(byteStream, uri);
 		if (bytestreamAliasUrl == null) {
-			log.error("Bytestream  '" + bytestreamUri + "' had no alias URL.");
-			return null;
+			log.warn("Bytestream  '" + bytestreamUri + "' had no alias URL, It will be replaced by bytestreamUri "+bytestreamUri);
+			bytestreamAliasUrl=bytestreamUri;
+//			return null;
 		}
 
 		return new FileInfo.Builder().setUri(uri).setFilename(filename)

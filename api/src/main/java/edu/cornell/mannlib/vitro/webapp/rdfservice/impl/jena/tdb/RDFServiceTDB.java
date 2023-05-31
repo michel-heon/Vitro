@@ -135,6 +135,15 @@ public class RDFServiceTDB extends RDFServiceJena {
 			dataset.end();
 		}
 	}
+    @Override
+    public void sparqlConstructQuery(String query, Model model, boolean withFilter) throws RDFServiceException {
+        dataset.begin(ReadWrite.READ);
+        try {
+            super.sparqlConstructQuery(query, model, withFilter);
+        } finally {
+            dataset.end();
+        }
+    }
 
 	@Override
 	public InputStream sparqlDescribeQuery(String query,
@@ -303,4 +312,5 @@ public class RDFServiceTDB extends RDFServiceJena {
 		"\\^\\^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger>" + "|" +
 		"\\^\\^<http://www.w3.org/2001/XMLSchema#positiveInteger>" + "|" +
 		"\\^\\^<http://www.w3.org/2001/XMLSchema#negativeInteger>";
+
 }

@@ -245,7 +245,11 @@ public class RDFServiceSparql extends RDFServiceImpl implements RDFService {
 			qe.close();
 		}
 	}
-
+    @Override
+    public void sparqlConstructQuery(String query, Model model, boolean withFilter) throws RDFServiceException {
+        sparqlConstructQuery( query,  model);
+    }
+	
 	public void sparqlDescribeQuery(String queryStr, Model model) throws RDFServiceException {
 
         Query query = createQuery(queryStr);
@@ -952,4 +956,5 @@ public class RDFServiceSparql extends RDFServiceImpl implements RDFService {
 	protected UsernamePasswordCredentials getCredentials() {
 		return null;
 	}
+
 }

@@ -322,6 +322,10 @@ public class SameAsFilteringRDFServiceFactory implements RDFServiceFactory {
             
         }
 
+        @Override
+        public void sparqlConstructQuery(String query, Model model, boolean withFilter) throws RDFServiceException {
+            sparqlConstructQuery(query, model);
+        }
 
     }
 

@@ -78,16 +78,23 @@ public class LanguageFilteringRDFService implements RDFService {
     @Override
     public void sparqlConstructQuery(String query, Model model)
             throws RDFServiceException {
+        sparqlConstructQuery(query, model, true);
+    }
+    
+    @Override
+    public void sparqlConstructQuery(String query, Model model, boolean withFilter)
+            throws RDFServiceException {
         if (model.isEmpty()) {
             s.sparqlConstructQuery(query, model);
-            filterModel.filterModel(model, langs);
+            if ( withFilter ) filterModel.filterModel(model, langs);
         } else {
             Model constructedModel = ModelFactory.createDefaultModel();
             s.sparqlConstructQuery(query, constructedModel);
-            filterModel.filterModel(constructedModel, langs);
+            if ( withFilter ) filterModel.filterModel(constructedModel, langs);
             model.add(constructedModel);
         }
     }
+
     @Override
     public void sparqlDescribeQuery(String queryStr, Model model) throws RDFServiceException {
         if (model.isEmpty()) {

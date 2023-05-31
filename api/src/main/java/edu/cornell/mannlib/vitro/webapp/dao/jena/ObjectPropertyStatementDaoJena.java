@@ -2,6 +2,7 @@
 
 package edu.cornell.mannlib.vitro.webapp.dao.jena;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.apache.jena.ontology.OntModel;
+import org.apache.jena.ontology.OntProperty;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
@@ -36,8 +38,12 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.shared.Lock;
 import org.apache.jena.util.iterator.ClosableIterator;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 
 import edu.cornell.mannlib.vitro.webapp.beans.FauxProperty;
 import edu.cornell.mannlib.vitro.webapp.beans.Individual;
@@ -104,11 +110,11 @@ public class ObjectPropertyStatementDaoJena extends JenaBaseDao implements Objec
         	try {
 	            Resource ind = ontModel.getResource(entity.getURI());
 	            List<ObjectPropertyStatement> objPropertyStmtList = new ArrayList<ObjectPropertyStatement>();
-	            ClosableIterator<Statement> propIt = ind.listProperties();
+	            ClosableIterator<Statement> propIt = ontModel.listStatements(ind, (Property) null,(RDFNode)  null);
 	            try {
 	                while (propIt.hasNext()) {
 	                    Statement st = propIt.next();
-
+	                    log.debug(st.toString());
 	                    if (st.getObject().isResource() && !(NONUSER_NAMESPACES.contains(st.getPredicate().getNameSpace()))) {
 	                        try {
 	                            ObjectPropertyStatement objPropertyStmt = new ObjectPropertyStatementImpl();
@@ -125,7 +131,14 @@ public class ObjectPropertyStatementDaoJena extends JenaBaseDao implements Objec
 	                                if( uriToObjectProperty.containsKey(prop.getURI())){
 	                                	objPropertyStmt.setProperty(uriToObjectProperty.get(prop.getURI()));
 	                                }else{
-	                                	ObjectProperty p = opDaoJena.propertyFromOntProperty(getOntModel().getObjectProperty(prop.getURI()));
+	                                    if (LogManager.getRootLogger().getLevel() == Level.DEBUG) {
+	                                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+	                                        RDFDataMgr.write(stream, getOntModel(), Lang.TURTLE);
+	                                        log.debug(stream);
+	                                    }
+                                        OntProperty _ontProp = getOntModel().getOntProperty(prop.getURI());
+                                        log.debug("getObjectProperty for: "+prop.getURI() +" = "+_ontProp);
+	                                	ObjectProperty p = opDaoJena.propertyFromOntProperty(_ontProp);
 	                                	if( p != null ){
 	                                		uriToObjectProperty.put(prop.getURI(), p);
 	                                		objPropertyStmt.setProperty(uriToObjectProperty.get(prop.getURI()));

@@ -444,10 +444,16 @@ public abstract class RDFServiceJena extends RDFServiceImpl implements RDFServic
         return getRDFResultStream(query, CONSTRUCT, resultFormat);
     }
 
+    @Override
     public void sparqlConstructQuery(String query, Model model) throws RDFServiceException {
         getRDFModel(query, CONSTRUCT, model);
     }
     
+    @Override
+    public void sparqlConstructQuery(String query, Model model, boolean withFilter) throws RDFServiceException {
+        getRDFModel(query, CONSTRUCT, model);
+    }
+
     @Override
     public void sparqlDescribeQuery(String query,
             Model model) throws RDFServiceException {

@@ -404,23 +404,6 @@ public abstract class AbstractOntModelDecorator implements OntModel {
 		return inner.getReader(lang);
 	}
 
-	@Override
-	@Deprecated
-	public String setReaderClassName(String lang, String className) {
-		return inner.setReaderClassName(lang, className);
-	}
-
-	@Override
-	@Deprecated
-	public void resetRDFReaderF() {
-		inner.resetRDFReaderF();
-	}
-
-	@Override
-	@Deprecated
-	public String removeReader(String s) throws IllegalArgumentException {
-		return inner.removeReader(s);
-	}
 
 	@Override
 	public RDFWriter getWriter() {
@@ -432,23 +415,6 @@ public abstract class AbstractOntModelDecorator implements OntModel {
 		return inner.getWriter(lang);
 	}
 
-	@Override
-	@Deprecated
-	public String setWriterClassName(String lang, String className) {
-		return inner.setWriterClassName(lang, className);
-	}
-
-	@Override
-	@Deprecated
-	public void resetRDFWriterF() {
-		inner.resetRDFWriterF();
-	}
-
-	@Override
-	@Deprecated
-	public String removeWriter(String s) throws IllegalArgumentException {
-		return inner.removeWriter(s);
-	}
 
 	@Override
 	public Alt createAlt(String uri) {

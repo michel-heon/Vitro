@@ -366,21 +366,6 @@ public abstract class AbstractModelDecorator implements Model {
 	}
 
 	@Override
-	public String setReaderClassName(String lang, String className) {
-		return inner.setReaderClassName(lang, className);
-	}
-
-	@Override
-	public void resetRDFReaderF() {
-		inner.resetRDFReaderF();
-	}
-
-	@Override
-	public String removeReader(String s) throws IllegalArgumentException {
-		return inner.removeReader(s);
-	}
-
-	@Override
 	public RDFWriter getWriter() {
 		return inner.getWriter();
 	}
@@ -390,20 +375,6 @@ public abstract class AbstractModelDecorator implements Model {
 		return inner.getWriter(lang);
 	}
 
-	@Override
-	public String setWriterClassName(String lang, String className) {
-		return inner.setWriterClassName(lang, className);
-	}
-
-	@Override
-	public void resetRDFWriterF() {
-		inner.resetRDFWriterF();
-	}
-
-	@Override
-	public String removeWriter(String s) throws IllegalArgumentException {
-		return inner.removeWriter(s);
-	}
 
 	@Override
 	public Alt createAlt(String uri) {
