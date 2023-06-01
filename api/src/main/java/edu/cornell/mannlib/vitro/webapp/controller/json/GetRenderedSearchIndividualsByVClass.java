@@ -20,6 +20,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 
 import edu.cornell.mannlib.vitro.webapp.beans.Individual;
+import edu.cornell.mannlib.vitro.webapp.config.ConfigurationProperties;
 import edu.cornell.mannlib.vitro.webapp.controller.VitroRequest;
 import edu.cornell.mannlib.vitro.webapp.dao.IndividualDao;
 import edu.cornell.mannlib.vitro.webapp.services.shortview.ShortViewService;
@@ -39,11 +40,21 @@ import java.util.Map;
  * the results.
  */
 public class GetRenderedSearchIndividualsByVClass extends GetSearchIndividualsByVClasses {
-	private static final Log log = LogFactory
+	private static final String RENDERED_SEARCH_INDIVIDUAL_BUFFERED = "rendered.search.individual.buffered";
+    private static final Log log = LogFactory
 			.getLog(GetRenderedSearchIndividualsByVClass.class);
+    private boolean isBufferedSearchIndividual = false;
 
 	protected GetRenderedSearchIndividualsByVClass(VitroRequest vreq) {
 		super(vreq);
+		String propValue=null;
+        try {
+	        ConfigurationProperties prop = ConfigurationProperties.getBean(vreq);
+	        propValue=prop.getProperty(RENDERED_SEARCH_INDIVIDUAL_BUFFERED,"false");
+	        isBufferedSearchIndividual = Boolean.valueOf(propValue);
+        } catch (Exception e) {
+            log.warn("There's a problem with the (\"+RENDERED_SEARCH_INDIVIDUAL_BUFFERED+\") property and the value ("+propValue+") obtained. A boolean is expected"); 
+        }
 	}
 
 	/**
@@ -223,27 +234,32 @@ public class GetRenderedSearchIndividualsByVClass extends GetSearchIndividualsBy
         }
     }
 
-	protected String renderShortView(String individualUri, String vclassName) {
-	    log.debug("start :"+individualUri);
- //       Instant t1 = Instant.now();
-		IndividualDao iDao = vreq.getBufferedIndividualWebappDaoFactory().getIndividualDao();
- //       Instant t2 = Instant.now();
-		Individual individual = iDao.getIndividualByURI(individualUri);
+    protected String renderShortView(String individualUri, String vclassName) {
+//        LogManager.getRootLogger().setLevel(Level.DEBUG);
+        log.debug("start :" + individualUri);
+        IndividualDao iDao;
+        // Instant t1 = Instant.now();
+        if (isBufferedSearchIndividual) {
+            iDao = vreq.getBufferedIndividualWebappDaoFactory().getIndividualDao();
+            log.info("individual searches are buffered");
+        } else {
+            iDao = vreq.getWebappDaoFactory().getIndividualDao();
+            log.info("individual searches are NOT-buffered");
+        }
+        // Instant t2 = Instant.now();
+        Individual individual = iDao.getIndividualByURI(individualUri);
 //        log.info("toString "+ individual);
 //        Instant t3 = Instant.now();
 
-		Map<String, Object> modelMap = new HashMap<String, Object>();
-		modelMap.put("individual", IndividualTemplateModelBuilder.build(individual, vreq));
-		modelMap.put("vclass", vclassName);
+        Map<String, Object> modelMap = new HashMap<String, Object>();
+        modelMap.put("individual", IndividualTemplateModelBuilder.build(individual, vreq));
+        modelMap.put("vclass", vclassName);
 //        Instant t4 = Instant.now();
 
-		ShortViewService svs = ShortViewServiceSetup.getService(ctx);
-		
-//        Instant t5 = Instant.now();
-//        LogManager.getRootLogger().setLevel(Level.DEBUG);
+        ShortViewService svs = ShortViewServiceSetup.getService(ctx);
 
-		String rsv = svs.renderShortView(individual, ShortViewContext.BROWSE,modelMap, vreq);
-//        LogManager.getRootLogger().setLevel(Level.INFO);
+//        Instant t5 = Instant.now();
+        String rsv = svs.renderShortView(individual, ShortViewContext.BROWSE, modelMap, vreq);
 //        Instant t6 = Instant.now();
 //        log.info("toString "+ individual);
 //        log.info("ANALYSER: "+
@@ -252,7 +268,8 @@ public class GetRenderedSearchIndividualsByVClass extends GetSearchIndividualsBy
 //        " total-modelMap="+ChronoUnit.MILLIS.between(t3,t4)/1000.0+ 
 //        " total-ShortViewService="+ChronoUnit.MILLIS.between(t4,t5)/1000.0+ 
 //        " total="+ChronoUnit.MILLIS.between(t1,t6)/1000.0);
-	      log.debug("END :"+individualUri);
-		return rsv;
-	}
+        log.debug("END :" + individualUri);
+//        LogManager.getRootLogger().setLevel(Level.INFO);
+        return rsv;
+    }
 }

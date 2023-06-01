@@ -131,10 +131,10 @@ public class ObjectPropertyStatementDaoJena extends JenaBaseDao implements Objec
 	                                if( uriToObjectProperty.containsKey(prop.getURI())){
 	                                	objPropertyStmt.setProperty(uriToObjectProperty.get(prop.getURI()));
 	                                }else{
-	                                    if (LogManager.getRootLogger().getLevel() == Level.DEBUG) {
+	                                    if (LogManager.getRootLogger().getLevel() == Level.TRACE) {
 	                                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
 	                                        RDFDataMgr.write(stream, getOntModel(), Lang.TURTLE);
-	                                        log.debug(stream);
+	                                        log.trace(stream);
 	                                    }
                                         OntProperty _ontProp = getOntModel().getOntProperty(prop.getURI());
                                         log.debug("getObjectProperty for: "+prop.getURI() +" = "+_ontProp);

@@ -1067,5 +1067,23 @@ public class IndividualSDB extends IndividualImpl implements Individual {
 	public void resolveAsFauxPropertyStatements(List<ObjectPropertyStatement> list) {
 		webappDaoFactory.getObjectPropertyStatementDao().resolveAsFauxPropertyStatements(list);
 	}
-
+	
+    @Override
+    public String toString() {
+        return "IndividualBufferedSDB [" + (getName() != null ? "\ngetName()=" + getName() + ", " : "")
+                + (getVClassURI() != null ? "\ngetVClassURI()=" + getVClassURI() + ", " : "") 
+                + (getVClasses() != null ? "\ngetVClasses()=" + getVClasses() + ", " : "")
+                + (getURI() != null ? "\ngetURI()=" + getURI() + ", " : "")
+                + (getNamespace() != null ? "\ngetNamespace()=" + getNamespace() + ", " : "")
+                + (getLabel() != null ? "\ngetLabel()=" + getLabel() + ", " : "")
+                + (getLocalName() != null ? "\ngetLocalName()=" + getLocalName() + ", " : "")
+                + (getLocalNameWithPrefix() != null ? "\ngetLocalNameWithPrefix()=" + getLocalNameWithPrefix() : "")
+                + "\nhasThumb()=" + hasThumb() + ", "
+                + (getMainImageUri() != null ? "\ngetMainImageUri()=" + getMainImageUri() + ", " : "")
+                + (getImageUrl() != null ? "\ngetImageUrl()=" + getImageUrl() + ", " : "")
+                + (getThumbUrl() != null ? "\ngetThumbUrl()=" + getThumbUrl() + ", " : "")
+                + (getObjectPropertyList() != null ? "\ngetObjectPropertyList()=" + getObjectPropertyList() + ", " : "")
+                + (getDataPropertyList() != null ? "\ngetDataPropertyList()=" + getDataPropertyList() + ", " : "")
+                + "]";
+    }
 }

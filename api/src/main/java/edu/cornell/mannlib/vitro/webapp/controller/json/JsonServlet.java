@@ -17,6 +17,7 @@ import org.apache.commons.logging.LogFactory;
 
 import edu.cornell.mannlib.vitro.webapp.beans.DataProperty;
 import edu.cornell.mannlib.vitro.webapp.beans.Individual;
+import edu.cornell.mannlib.vitro.webapp.config.ConfigurationProperties;
 import edu.cornell.mannlib.vitro.webapp.controller.VitroHttpServlet;
 import edu.cornell.mannlib.vitro.webapp.controller.VitroRequest;
 import edu.cornell.mannlib.vitro.webapp.controller.freemarker.IndividualListController;
@@ -36,16 +37,17 @@ import edu.cornell.mannlib.vitro.webapp.utils.log.LogUtils;
 public class JsonServlet extends VitroHttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Log log = LogFactory.getLog(JsonServlet.class);
+
     
+    /** This value is set in the runtime.property file **/
+    private static final String RENDERED_SEARCH_INDIVIDUAL_PERPAGE = "rendered.search.individual.perpage";
     /*
      * Approximately 50 SPARQL queries are required to process each individual. 
      * The value of this variable has a major impact on the refresh 
      * performance of the front pages of each tab, especially on person and organization
      *
-     * I suggest to put the assignment of this variable in runtime.properties
-     * 
      */
-    private static final int INDIVIDUALS_PER_PAGE = 30;
+    private static int INDIVIDUALS_PER_PAGE = 30; 
     public static int getIndividualsPerPage() {
         return INDIVIDUALS_PER_PAGE;
     }
@@ -64,6 +66,9 @@ public class JsonServlet extends VitroHttpServlet {
         log.debug(LogUtils.formatRequestProperties(log, "debug", req));
 
         VitroRequest vreq = new VitroRequest(req);
+        ConfigurationProperties prop = ConfigurationProperties.getBean(vreq);
+        INDIVIDUALS_PER_PAGE = Integer.valueOf(prop.getProperty(RENDERED_SEARCH_INDIVIDUAL_PERPAGE,"30"));
+
         if (vreq.getParameter("getEntitiesByVClass") != null) {
             if( vreq.getParameter("resultKey") == null) {
                 new GetEntitiesByVClass(vreq).process(resp);

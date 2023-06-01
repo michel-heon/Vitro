@@ -79,6 +79,8 @@ private String indvGraphSparqlQuery=
         + "     ?thumbnailImage ?p_thumbnailImage ?o_thumbnailImage .\n"
         + "     ?vIndividual ?p_vIndividual ?o_vIndividual . \n"
         + "     ?o_vIndividual ?po_vIndividual ?oo_vIndividual .\n"
+        + "     ?o_imgLoc ?po_imgLoc ?oo_imgLoc .\n"
+        + "     ?o_imgThumLoc ?po_imgThumLoc ?oo_imgThumLoc .\n"
         + "}\n"
         + "where {\n"
         + "    BIND ( <__INDIVIDUAL_IRI__> AS ?uri) .\n"
@@ -87,17 +89,31 @@ private String indvGraphSparqlQuery=
         + "    FILTER ( ! STRENDS( STR(?p), \"relatedBy\") ) .\n"
         + "    FILTER ( ! STRENDS( STR(?p), \"researchAreaOf\") ) .\n"
         + "    FILTER ( ! STRENDS( STR(?p), \"type\") ) .\n"
+        + "    FILTER ( ! STRENDS( STR(?p), \"hasKey\") ) .\n"
         + "    OPTIONAL {\n"
         + "        ?uri vitro-public:mainImage ?mainImage .\n"
         + "        ?mainImage ?p_mainImage ?o_mainImage .\n"
+        + "        FILTER ( ! STRENDS( STR(?p_mainImage), \"modTime\") ) .\n"
+        + "        OPTIONAL {\n"
+        + "            ?mainImage vitro-public:downloadLocation ?o_imgLoc .\n"
+        + "            ?o_imgLoc ?po_imgLoc ?oo_imgLoc .\n"
+        + "            FILTER ( ! STRENDS( STR(?po_imgLoc), \"modTime\") ) .\n"
+        + "            FILTER ( ! STRENDS( STR(?po_imgLoc), \"type\") ) .\n"
+        + "        }\n"
         + "        ?mainImage  vitro-public:thumbnailImage ?thumbnailImage .\n"
         + "        ?thumbnailImage ?p_thumbnailImage ?o_thumbnailImage .\n"
-        + "    }\n"
+        + "        FILTER ( ! STRENDS( STR(?p_thumbnailImage), \"modTime\") ) .\n"
+        + "        OPTIONAL {\n"
+        + "            ?thumbnailImage vitro-public:downloadLocation ?o_imgThumLoc .\n"
+        + "            ?o_imgThumLoc ?po_imgThumLoc ?oo_imgThumLoc .\n"
+        + "            FILTER ( ! STRENDS( STR(?po_imgThumLoc), \"modTime\") ) .\n"
+        + "        }\n"
+        + "    }\n" 
         + "    OPTIONAL {\n"
         + "        ?uri  obo:ARG_2000028 ?vIndividual .  \n"
         + "        ?vIndividual ?p_vIndividual ?o_vIndividual . \n"
-        + "        ?o_vIndividual ?po_vIndividual ?oo_vIndividual .\n"
         + "        FILTER ( STRENDS( STR(?p_vIndividual), \"hasTitle\") ) .\n"
+        + "        ?o_vIndividual ?po_vIndividual ?oo_vIndividual .\n"
         + "        FILTER ( ! STRENDS( STR(?p_vIndividual), \"type\") ) .\n"
         + "        FILTER ( ! STRENDS( STR(?po_vIndividual), \"type\") ) .\n"
         + "    }\n"
@@ -135,7 +151,7 @@ private String indvGraphSparqlQuery=
             String _query = indvGraphSparqlQuery.replace("__INDIVIDUAL_IRI__", individualUri);
             log.debug(_query);
             webappDaoFactory.getRDFService().sparqlConstructQuery(_query, _buffOntModel, false);
-            if (LogManager.getRootLogger().getLevel() == Level.DEBUG) {
+            if (LogManager.getLogger(IndividualBufferedSDB.class.getName()).getLevel() == Level.DEBUG) {
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
                 RDFDataMgr.write(stream, _buffOntModel, Lang.TURTLE);
                 log.debug(stream);
@@ -160,13 +176,9 @@ private String indvGraphSparqlQuery=
         return _individualJena.getMostSpecificTypeURIs();
     }
     
-//    private Property FS_DOWNLOAD_LOCATION_PROP=ResourceFactory.createProperty(VitroVocabulary.FS_DOWNLOAD_LOCATION);
-//    private Property FS_THUMBNAIL_IMAGE_PROP=ResourceFactory.createProperty(VitroVocabulary.FS_THUMBNAIL_IMAGE);
     public String getMainImageUri() {
         populateIndividualBufferModel();
         return _individualJena.getMainImageUri();
-//        List<Statement> stmts = getBuffOntModel().listStatements((Resource) null, FS_THUMBNAIL_IMAGE_PROP, (RDFNode) null).toList();
-//        return stmts.get(0).getObject().asResource().getURI();
     }
 
     public String getImageUrl() {
@@ -181,9 +193,6 @@ private String indvGraphSparqlQuery=
     public String getThumbUrl() {
         populateIndividualBufferModel();
         return _individualJena.getThumbUrl();
-//        populateIndividualBufferModel();
-//        List<Statement> stmts = getBuffOntModel().listStatements((Resource) null, FS_THUMBNAIL_IMAGE_PROP, (RDFNode) null).toList();
-//        return stmts.get(0).getObject().asResource().getURI();
     }
     public OntModel getBuffOntModel() {
         return this._buffOntModel;

@@ -11,9 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import edu.cornell.mannlib.vitro.webapp.dao.VitroVocabulary;
@@ -24,16 +22,16 @@ import edu.cornell.mannlib.vitro.webapp.filestorage.model.ImageInfo;
 */
 @SuppressWarnings("ComparableType")
 public class IndividualImpl extends BaseResourceBean implements Individual, Comparable<Individual> {
-	/**
-	 * This can be used as a "not initialized" indicator for a property that
-	 * could validly be set to {@code null}. If {@code get()} is
-	 * called on such a property, and the property has this value, the correct
-	 * value can be fetched and cached.
-	 */
-	protected static final String NOT_INITIALIZED = "__%NOT_INITIALIZED%__";
+    /**
+     * This can be used as a "not initialized" indicator for a property that
+     * could validly be set to {@code null}. If {@code get()} is
+     * called on such a property, and the property has this value, the correct
+     * value can be fetched and cached.
+     */
+    protected static final String NOT_INITIALIZED = "__%NOT_INITIALIZED%__";
 
-	public String name = null;
-	protected String rdfsLabel = null;
+    public String name = null;
+    protected String rdfsLabel = null;
     public String vClassURI = null;
     protected VClass vClass = null;
     protected List<VClass> directVClasses = null;
@@ -108,10 +106,10 @@ public class IndividualImpl extends BaseResourceBean implements Individual, Comp
         populatedObjectPropertyList = propertyList;
     }
     public Map<String,ObjectProperty> getObjectPropertyMap() {
-    	return this.objectPropertyMap;
+        return this.objectPropertyMap;
     }
     public void setObjectPropertyMap( Map<String,ObjectProperty> propertyMap ) {
-    	this.objectPropertyMap = propertyMap;
+        this.objectPropertyMap = propertyMap;
     }
     public List <DataProperty>getDataPropertyList() {
         return datatypePropertyList;
@@ -126,10 +124,10 @@ public class IndividualImpl extends BaseResourceBean implements Individual, Comp
         populatedDataPropertyList = propertyList;
     }
     public Map<String,DataProperty> getDataPropertyMap() {
-    	return this.dataPropertyMap;
+        return this.dataPropertyMap;
     }
     public void setDataPropertyMap( Map<String,DataProperty> propertyMap ) {
-    	this.dataPropertyMap = propertyMap;
+        this.dataPropertyMap = propertyMap;
     }
     public void setDataPropertyStatements(List <DataPropertyStatement>list) {
          dataPropertyStatements = list;
@@ -176,36 +174,36 @@ public class IndividualImpl extends BaseResourceBean implements Individual, Comp
     }
 
     public List<VClass> getVClasses() {
-    	return allVClasses;
+        return allVClasses;
     }
 
     @Override
-	public boolean isVClass(String uri) {
-    	if (uri == null) {
-    		return false;
-    	}
-		for (VClass vClass : getVClasses()) {
-			if (uri.equals(vClass.getURI())) {
-				return true;
-			}
-		}
-		return false;
-	}
+    public boolean isVClass(String uri) {
+        if (uri == null) {
+            return false;
+        }
+        for (VClass vClass : getVClasses()) {
+            if (uri.equals(vClass.getURI())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	public List<VClass> getVClasses(boolean direct) {
-    	if (direct) {
-    		return directVClasses;
-    	} else {
-    		return allVClasses;
-    	}
+    public List<VClass> getVClasses(boolean direct) {
+        if (direct) {
+            return directVClasses;
+        } else {
+            return allVClasses;
+        }
     }
 
     public void setVClasses(List<VClass> vClassList, boolean direct) {
-    	if (direct) {
-    		this.directVClasses = vClassList;
-    	} else {
-    		this.allVClasses = vClassList;
-    	}
+        if (direct) {
+            this.directVClasses = vClassList;
+        } else {
+            this.allVClasses = vClassList;
+        }
     }
 
     @Override
@@ -262,26 +260,26 @@ public class IndividualImpl extends BaseResourceBean implements Individual, Comp
         this.externalIds = externalIds;
     }
 
-	@Override
-	public String getMainImageUri() {
-		return (mainImageUri == NOT_INITIALIZED) ? null : mainImageUri;
-	}
+    @Override
+    public String getMainImageUri() {
+        return (mainImageUri == NOT_INITIALIZED) ? null : mainImageUri;
+    }
 
-	@Override
-	public void setMainImageUri(String mainImageUri) {
-		this.mainImageUri = mainImageUri;
-		this.imageInfo = null;
-	}
+    @Override
+    public void setMainImageUri(String mainImageUri) {
+        this.mainImageUri = mainImageUri;
+        this.imageInfo = null;
+    }
 
-	@Override
-	public String getImageUrl() {
-		return "imageUrl";
-	}
+    @Override
+    public String getImageUrl() {
+        return "imageUrl";
+    }
 
-	@Override
-	public String getThumbUrl() {
-		return "thumbUrl";
-	}
+    @Override
+    public String getThumbUrl() {
+        return "thumbUrl";
+    }
 
     public Float getSearchBoost() { return searchBoost;  }
     public void setSearchBoost(Float boost) { searchBoost = boost; }
@@ -325,73 +323,17 @@ public class IndividualImpl extends BaseResourceBean implements Individual, Comp
    public int compareTo(Individual o2) {
        Collator collator = Collator.getInstance();
        if (o2 == null) {
-       	   return 1;
+           return 1;
        } else {
-       	   return collator.compare(this.getName(),o2.getName());
+           return collator.compare(this.getName(),o2.getName());
        }
    }
 
-   public String toString_() {
-       ObjectMapper mapper = new ObjectMapper();
-       String jsonString = "";
-       try {
-           jsonString = (name != null                     ? "{ name = "+ mapper.writeValueAsString(name) + " },": "")
-                   + (rdfsLabel != null                   ? "{ rdfsLabel = "+ mapper.writeValueAsString(rdfsLabel)  + " },": "")
-                   + (vClassURI != null                   ? "{ vClassURI = "+ mapper.writeValueAsString(vClassURI)  + " },": "")
-                   + (vClass != null                      ? "{ vClass = "+ mapper.writeValueAsString(vClass)  + " },": "")
-                   + (directVClasses != null              ? "{ directVClasses = "+ mapper.writeValueAsString(directVClasses)  + " },": "")
-                   + (allVClasses != null                 ? "{ allVClasses = "+ mapper.writeValueAsString(allVClasses)  + " },": "")
-                   + (modTime != null                     ? "{ modTime = "+ mapper.writeValueAsString(modTime)  + " },": "")
-                   + (propertyList != null                ? "{ propertyList = "+ mapper.writeValueAsString(propertyList)  + " }," : "")
-                   + (populatedObjectPropertyList != null ? "{ populatedObjectPropertyList = "+ mapper.writeValueAsString(populatedObjectPropertyList)  + " },": "")
-                   + (objectPropertyMap != null           ? "{ objectPropertyMap = "+ mapper.writeValueAsString(objectPropertyMap)  + " },": "")
-                   + (datatypePropertyList != null        ? "{ datatypePropertyList = "+ mapper.writeValueAsString(datatypePropertyList)  + " },": "")
-                   + (populatedDataPropertyList != null   ? "{ populatedDataPropertyList = "+ mapper.writeValueAsString(populatedDataPropertyList)  + " },": "")
-                   + (dataPropertyMap != null             ? "{ dataPropertyMap = "+ mapper.writeValueAsString(dataPropertyMap)  + " },": "")
-                   + (dataPropertyStatements != null      ? "{ dataPropertyStatements = "+ mapper.writeValueAsString(dataPropertyStatements)  + " },": "")
-                   + (objectPropertyStatements != null    ? "{ objectPropertyStatements = "+ mapper.writeValueAsString(objectPropertyStatements)  + " },": "")
-                   + (rangeEnts2Ents != null              ? "{ rangeEnts2Ents = "+ mapper.writeValueAsString(rangeEnts2Ents)  + " },": "")
-                   + (externalIds != null                 ? "{ externalIds = "+ mapper.writeValueAsString(externalIds)  + " },": "")
-                   + (mainImageUri != null                ? "{ mainImageUri = "+ mapper.writeValueAsString(mainImageUri)  + " },": "")
-                   + (imageInfo != null                   ? "{ imageInfo = "+ mapper.writeValueAsString(imageInfo)  + " }": "");
-       } catch (JsonProcessingException e) {
-           // TODO Auto-generated catch block
-           e.printStackTrace();
-       }
-       return jsonString;
-   }
-   
-   
    public String toString(){
        if( getURI() == null ){
            return "uninitialized, null URI";
-       } else {
-           return "IndividualImpl [\n" + 
-                   (name != null ? "name=" + name + ", \n" : "")
-                   + (rdfsLabel != null ? "rdfsLabel=" + rdfsLabel + ", \n" : "")
-                   + (vClassURI != null ? "vClassURI=" + vClassURI + ", \n" : "")
-                   + (vClass != null ? "vClass=" + vClass + ", \n" : "")
-                   + (directVClasses != null ? "directVClasses=" + directVClasses + ", \n" : "")
-                   + (allVClasses != null ? "allVClasses=" + allVClasses + ", \n" : "")
-                   + (modTime != null ? "modTime=" + modTime + ", " : "")
-                   + (propertyList != null ? "propertyList=" + propertyList + ", \n" : "")
-                   + (populatedObjectPropertyList != null
-                           ? "populatedObjectPropertyList=" + populatedObjectPropertyList + ", \n"
-                           : "")
-                   + (objectPropertyMap != null ? "objectPropertyMap=" + objectPropertyMap + ", \n" : "")
-                   + (datatypePropertyList != null ? "datatypePropertyList=" + datatypePropertyList + ", \n" : "")
-                   + (populatedDataPropertyList != null ? "populatedDataPropertyList=" + populatedDataPropertyList + ", \n"
-                           : "")
-                   + (dataPropertyMap != null ? "dataPropertyMap=" + dataPropertyMap + ", \n" : "")
-                   + (dataPropertyStatements != null ? "dataPropertyStatements=" + dataPropertyStatements + ", \n" : "")
-                   + (objectPropertyStatements != null ? "objectPropertyStatements=" + objectPropertyStatements + ", \n"
-                           : "")
-                   + (rangeEnts2Ents != null ? "rangeEnts2Ents=" + rangeEnts2Ents + ", \n" : "")
-                   + (externalIds != null ? "externalIds=" + externalIds + ", \n" : "")
-                   + (mainImageUri != null ? "mainImageUri=" + mainImageUri + ", \n" : "")
-                   + (imageInfo != null ? "imageInfo=" + imageInfo + ", \n" : "")
-                   + "]";
-//           return getURI() + " " + getName();
+       }else{
+           return getURI() + " " + getName();
        }
    }
 
@@ -400,8 +342,8 @@ public class IndividualImpl extends BaseResourceBean implements Individual, Comp
     }
 
     @Override
-	public void resolveAsFauxPropertyStatements(List<ObjectPropertyStatement> list) {
-		// No webappDaoFactory, so nothing to do.
-	}
+    public void resolveAsFauxPropertyStatements(List<ObjectPropertyStatement> list) {
+        // No webappDaoFactory, so nothing to do.
+    }
 
 }
