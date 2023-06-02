@@ -37,22 +37,6 @@ import edu.cornell.mannlib.vitro.webapp.utils.log.LogUtils;
 public class JsonServlet extends VitroHttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Log log = LogFactory.getLog(JsonServlet.class);
-
-    
-    /** This value is set in the runtime.property file **/
-    private static final String RENDERED_SEARCH_INDIVIDUAL_PERPAGE = "rendered.search.individual.perpage";
-    /*
-     * Approximately 50 SPARQL queries are required to process each individual. 
-     * The value of this variable has a major impact on the refresh 
-     * performance of the front pages of each tab, especially on person and organization
-     *
-     */
-    private static int INDIVIDUALS_PER_PAGE = 30; 
-    public static int getIndividualsPerPage() {
-        return INDIVIDUALS_PER_PAGE;
-    }
-
-
     public static final int REPLY_SIZE = 256;
 
     @Override
@@ -66,8 +50,6 @@ public class JsonServlet extends VitroHttpServlet {
         log.debug(LogUtils.formatRequestProperties(log, "debug", req));
 
         VitroRequest vreq = new VitroRequest(req);
-        ConfigurationProperties prop = ConfigurationProperties.getBean(vreq);
-        INDIVIDUALS_PER_PAGE = Integer.valueOf(prop.getProperty(RENDERED_SEARCH_INDIVIDUAL_PERPAGE,"30"));
 
         if (vreq.getParameter("getEntitiesByVClass") != null) {
             if( vreq.getParameter("resultKey") == null) {
@@ -128,7 +110,7 @@ public class JsonServlet extends VitroHttpServlet {
         try {
 	         return IndividualListController.getResultsForVClassIntersections(
 	                 vclassURIs,
-	                 page, INDIVIDUALS_PER_PAGE,
+	                 page, GetRenderedSearchIndividualsByVClass.getIndividualsPerPage(vreq),
 	                 alpha,
 	                 vreq);
         } catch(Exception ex) {

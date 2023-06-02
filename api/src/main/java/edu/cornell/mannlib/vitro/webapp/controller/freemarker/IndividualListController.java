@@ -24,6 +24,7 @@ import edu.cornell.mannlib.vitro.webapp.controller.freemarker.responsevalues.Exc
 import edu.cornell.mannlib.vitro.webapp.controller.freemarker.responsevalues.ResponseValues;
 import edu.cornell.mannlib.vitro.webapp.controller.freemarker.responsevalues.TemplateResponseValues;
 import edu.cornell.mannlib.vitro.webapp.controller.individuallist.IndividualListResults;
+import edu.cornell.mannlib.vitro.webapp.controller.json.GetRenderedSearchIndividualsByVClass;
 import edu.cornell.mannlib.vitro.webapp.controller.json.JsonServlet;
 import edu.cornell.mannlib.vitro.webapp.dao.IndividualDao;
 import edu.cornell.mannlib.vitro.webapp.i18n.I18n;
@@ -44,7 +45,6 @@ public class IndividualListController extends FreemarkerHttpServlet {
     /*
      * The call to the attribution in JsonServlet ensures the uniformity of the assigned INDIVIDUALS_PER_PAGE value
      */
-    private static final int INDIVIDUALS_PER_PAGE = JsonServlet.getIndividualsPerPage();
     private static final int MAX_PAGES = 40;  // must be even
 
     private static final String TEMPLATE_DEFAULT = "individualList.ftl";
@@ -163,7 +163,8 @@ public class IndividualListController extends FreemarkerHttpServlet {
     throws SearchException{
    	 	try{
    	        List<String> classUris = Collections.singletonList(vclassURI);
-            return buildAndExecuteVClassQuery(classUris, page, INDIVIDUALS_PER_PAGE, alpha, vreq);
+   	        ConfigurationProperties prop = ConfigurationProperties.getBean(vreq);
+            return buildAndExecuteVClassQuery(classUris, page, GetRenderedSearchIndividualsByVClass.getIndividualsPerPage(vreq), alpha, vreq);
    	 	} catch (SearchEngineException e) {
    	 	    String msg = "An error occurred retrieving results for vclass query";
    	 	    log.error(msg, e);

@@ -40,22 +40,55 @@ import java.util.Map;
  * the results.
  */
 public class GetRenderedSearchIndividualsByVClass extends GetSearchIndividualsByVClasses {
-	private static final String RENDERED_SEARCH_INDIVIDUAL_BUFFERED = "rendered.search.individual.buffered";
-    private static final Log log = LogFactory
-			.getLog(GetRenderedSearchIndividualsByVClass.class);
+    /** This value is set in the runtime.property file **/
+    public static final String RENDERED_SEARCH_INDIVIDUAL_PERPAGE = "rendered.search.individual.perpage";
+	static final String RENDERED_SEARCH_INDIVIDUAL_ANALYSE_PROCESS = "rendered.search.individual.analyseProcess";
+    static final String RENDERED_SEARCH_INDIVIDUAL_PARALLEL_PROCESSING = "rendered.search.individual.parallelProcessing";
+    static final String RENDERED_SEARCH_INDIVIDUAL_BUFFERED = "rendered.search.individual.buffered";
+    private static final Log log = LogFactory.getLog(GetRenderedSearchIndividualsByVClass.class);
     private boolean isBufferedSearchIndividual = false;
+    private boolean isParallelProcessing = false;
+    private boolean isAnalyseProcess = false;
+    /*
+     * Approximately 50 SPARQL queries are required to process each individual. 
+     * The value of this variable has a major impact on the refresh 
+     * performance of the front pages of each tab, especially on person and organization
+     *
+     */
+    private static int INDIVIDUALS_PER_PAGE = 0; 
+    public static int getIndividualsPerPage(VitroRequest vreq) {
+        if (INDIVIDUALS_PER_PAGE != 0 ) return INDIVIDUALS_PER_PAGE;
+        ConfigurationProperties prop = ConfigurationProperties.getBean(vreq);
+        INDIVIDUALS_PER_PAGE = Integer.valueOf(prop.getProperty(RENDERED_SEARCH_INDIVIDUAL_PERPAGE,"30"));
+        return INDIVIDUALS_PER_PAGE;
+    }
 
-	protected GetRenderedSearchIndividualsByVClass(VitroRequest vreq) {
-		super(vreq);
-		String propValue=null;
+    protected GetRenderedSearchIndividualsByVClass(VitroRequest vreq) {
+        super(vreq);
+        String propValue=null;
+        ConfigurationProperties prop = ConfigurationProperties.getBean(vreq);
         try {
-	        ConfigurationProperties prop = ConfigurationProperties.getBean(vreq);
-	        propValue=prop.getProperty(RENDERED_SEARCH_INDIVIDUAL_BUFFERED,"false");
-	        isBufferedSearchIndividual = Boolean.valueOf(propValue);
+            propValue=prop.getProperty(RENDERED_SEARCH_INDIVIDUAL_BUFFERED,"false");
+            isBufferedSearchIndividual = Boolean.valueOf(propValue);
+            log.debug("isBufferedSearchIndividual = "+isBufferedSearchIndividual());
         } catch (Exception e) {
             log.warn("There's a problem with the (\"+RENDERED_SEARCH_INDIVIDUAL_BUFFERED+\") property and the value ("+propValue+") obtained. A boolean is expected"); 
         }
-	}
+        try {
+            propValue=prop.getProperty(RENDERED_SEARCH_INDIVIDUAL_PARALLEL_PROCESSING,"false");
+            isParallelProcessing = Boolean.valueOf(propValue);
+            log.debug("isParallelProcessing = "+isParallelProcessing());
+        } catch (Exception e) {
+            log.warn("There's a problem with the (\"+RENDERED_SEARCH_INDIVIDUAL_PARALLEL_PROCESSING+\") property and the value ("+propValue+") obtained. A boolean is expected"); 
+        }
+        try {
+            propValue=prop.getProperty(RENDERED_SEARCH_INDIVIDUAL_ANALYSE_PROCESS,"false");
+            isAnalyseProcess = Boolean.valueOf(propValue);
+            log.debug("isAnalyseProcess = "+isAnalyseProcess());
+        } catch (Exception e) {
+            log.warn("There's a problem with the (\"+RENDERED_SEARCH_INDIVIDUAL_ANALYSE_PROCESS+\") property and the value ("+propValue+") obtained. A boolean is expected"); 
+        }
+    }
 
 	/**
 	 * Search for individuals by VClass or VClasses in the case of multiple parameters. The class URI(s) and the paging
@@ -152,43 +185,69 @@ public class GetRenderedSearchIndividualsByVClass extends GetSearchIndividualsBy
 //    
 //    private String renderShortView(String individualUri, String vclassName) {
 
-	   /**
+    private void analyserLog(String message) {
+        if (isAnalyseProcess()) log.info("ANLYSER: "+message);
+    }
+    /**
      * Look through the return object. For each individual, render the short
      * view and insert the resulting HTML into the object.
      */
     private void addShortViewRenderings(ObjectNode rObj) {
+        if (isBufferedSearchIndividual) {
+            analyserLog("individual searches are buffered");
+        } else {
+            analyserLog("individual searches are NOT-buffered");
+        }
+        if (this.isParallelProcessing)
+            addShortViewRenderingsParallelMode(rObj);
+        else 
+            addShortViewRenderingsSerialMode(rObj);
+    }   
+
+    private void addShortViewRenderingsSerialMode(ObjectNode rObj) {
 //        LogManager.getRootLogger().setLevel(Level.DEBUG);
         ArrayNode individuals = (ArrayNode) rObj.get("individuals");
         String vclassName = rObj.get("vclass").get("name").asText();
-        Instant d1 = Instant.now();
+        Instant d1=null;
+        if (isAnalyseProcess()) d1 = Instant.now();
         int totalIndv = individuals.size();
         for (int i = 0; i < individuals.size(); i++) {
             ObjectNode individual = (ObjectNode) individuals.get(i);
-            Instant t1 = Instant.now();
+            Instant t1 = null;
+            Instant t2 = null;
+            if (isAnalyseProcess()) t1 = Instant.now();
             individual.put("shortViewHtml", renderShortView(individual.get("URI").asText(), vclassName));
-            Instant t2 = Instant.now();
-            long totalTime = ChronoUnit.MILLIS.between(t1, t2);
-            log.info("ANALYSER: The treatment at (" + t2 +") for (" + individual.get("URI").asText()+") took "+ totalTime/1000.0 + " seconds");
-
+            if (isAnalyseProcess()) {
+                t2 = Instant.now();
+                long totalTime = ChronoUnit.MILLIS.between(t1, t2);
+                if (isAnalyseProcess()) {
+                    try {
+                        analyserLog("The treatment at (" + t2 +") for (" + individual.get("URI").asText()+") took "+ totalTime/1000.0 + " seconds");
+                    } catch (Exception e) { }
+                }
+            }
         }
-        Instant d2 = Instant.now();
-        long totalTime = ChronoUnit.MILLIS.between(d1, d2);
-//        LogManager.getRootLogger().setLevel(Level.INFO);
-        try {
-            log.info("ANALYSER: total indv:(" + totalIndv + 
-                    ") total time (sec.):(" + totalTime / 1000.0 + 
-                    ") avrg time (sec.): " + (totalTime / totalIndv) / 1000.0);           
-        } catch (Exception e) {
-            log.info("ANALYSER: total indv:(" + totalIndv + 
-                    ") total time (sec.):(" + totalTime / 1000.0 +") ");           
+        if (isAnalyseProcess()) { 
+            Instant d2 = Instant.now();
+            long totalTime = ChronoUnit.MILLIS.between(d1, d2);
+            try {
+                analyserLog("total indv:(" + totalIndv + 
+                        ") total time (sec.):(" + totalTime / 1000.0 + 
+                        ") avrg time (sec.): " + (totalTime / totalIndv) / 1000.0);
+            } catch (Exception e) {
+                analyserLog("total indv:(" + totalIndv + 
+                        ") total time (sec.):(" + totalTime / 1000.0 +") ");
+            }
         }
     }
-    private void _addShortViewRenderings(ObjectNode rObj) {
+    
+    private void addShortViewRenderingsParallelMode(ObjectNode rObj) {
         ArrayNode individuals = (ArrayNode) rObj.get("individuals");
         String vclassName = rObj.get("vclass").get("name").asText();
         int indvSize = individuals.size();
         ExecutorService es = Executors.newFixedThreadPool(indvSize);
-        Instant d1 = Instant.now();
+        Instant d1 = null;
+        if (isAnalyseProcess())  d1 = Instant.now();
         for (int i = 0; i < indvSize; i++) {
                ObjectNode individual = (ObjectNode) individuals.get(i);
                ProcessIndividual pi = new ProcessIndividual();
@@ -202,15 +261,17 @@ public class GetRenderedSearchIndividualsByVClass extends GetSearchIndividualsBy
             }
         } catch (InterruptedException e1) {
         }
-        Instant d2 = Instant.now();
-        long totalTime = ChronoUnit.MILLIS.between(d1, d2);
-        try {
-            log.info("ANALYSER: total indv:(" + indvSize + 
-                    ") total time (sec.):(" + totalTime / 1000.0 + 
-                    ") avrg time (sec.): " + (totalTime / indvSize) / 1000.0);           
-        } catch (Exception e) {
-            log.info("ANALYSER: total indv:(" + indvSize + 
-                    ") total time (sec.):(" + totalTime / 1000.0 +") ");           
+        if (isAnalyseProcess()) {
+            Instant d2 = Instant.now();
+            long totalTime = ChronoUnit.MILLIS.between(d1, d2);
+            try {
+                analyserLog("total indv:(" + indvSize + 
+                        ") total time (sec.):(" + totalTime / 1000.0 + 
+                        ") avrg time (sec.): " + (totalTime / indvSize) / 1000.0);
+            } catch (Exception e) {
+                analyserLog("total indv:(" + indvSize + 
+                        ") total time (sec.):(" + totalTime / 1000.0 +") ");
+            }
         }
     }
     /*
@@ -235,41 +296,63 @@ public class GetRenderedSearchIndividualsByVClass extends GetSearchIndividualsBy
     }
 
     protected String renderShortView(String individualUri, String vclassName) {
-//        LogManager.getRootLogger().setLevel(Level.DEBUG);
-        log.debug("start :" + individualUri);
+        analyserLog("renderShortView START :" + individualUri);
         IndividualDao iDao;
         // Instant t1 = Instant.now();
-        if (isBufferedSearchIndividual) {
+        if (isBufferedSearchIndividual()) {
             iDao = vreq.getBufferedIndividualWebappDaoFactory().getIndividualDao();
-            log.info("individual searches are buffered");
         } else {
             iDao = vreq.getWebappDaoFactory().getIndividualDao();
-            log.info("individual searches are NOT-buffered");
         }
-        // Instant t2 = Instant.now();
         Individual individual = iDao.getIndividualByURI(individualUri);
-//        log.info("toString "+ individual);
-//        Instant t3 = Instant.now();
-
         Map<String, Object> modelMap = new HashMap<String, Object>();
         modelMap.put("individual", IndividualTemplateModelBuilder.build(individual, vreq));
         modelMap.put("vclass", vclassName);
-//        Instant t4 = Instant.now();
-
         ShortViewService svs = ShortViewServiceSetup.getService(ctx);
-
-//        Instant t5 = Instant.now();
         String rsv = svs.renderShortView(individual, ShortViewContext.BROWSE, modelMap, vreq);
-//        Instant t6 = Instant.now();
-//        log.info("toString "+ individual);
-//        log.info("ANALYSER: "+
-//        " total-renderShortView="+ChronoUnit.MILLIS.between(t5,t6)/1000.0+ 
-//        " total-iDao="+ChronoUnit.MILLIS.between(t1,t2)/1000.0+ 
-//        " total-modelMap="+ChronoUnit.MILLIS.between(t3,t4)/1000.0+ 
-//        " total-ShortViewService="+ChronoUnit.MILLIS.between(t4,t5)/1000.0+ 
-//        " total="+ChronoUnit.MILLIS.between(t1,t6)/1000.0);
-        log.debug("END :" + individualUri);
-//        LogManager.getRootLogger().setLevel(Level.INFO);
+        analyserLog("renderShortView END :" + individualUri);
         return rsv;
+    }
+
+    /**
+     * @return the isBufferedSearchIndividual
+     */
+    public boolean isBufferedSearchIndividual() {
+        return isBufferedSearchIndividual;
+    }
+
+    /**
+     * @param isBufferedSearchIndividual the isBufferedSearchIndividual to set
+     */
+    public void setBufferedSearchIndividual(boolean isBufferedSearchIndividual) {
+        this.isBufferedSearchIndividual = isBufferedSearchIndividual;
+    }
+
+    /**
+     * @return the isParallelProcessing
+     */
+    public boolean isParallelProcessing() {
+        return isParallelProcessing;
+    }
+
+    /**
+     * @param isParallelProcessing the isParallelProcessing to set
+     */
+    public void setParallelProcessing(boolean isParallelProcessing) {
+        this.isParallelProcessing = isParallelProcessing;
+    }
+
+    /**
+     * @return the isAnalyseProcess
+     */
+    public boolean isAnalyseProcess() {
+        return isAnalyseProcess;
+    }
+
+    /**
+     * @param isAnalyseProcess the isAnalyseProcess to set
+     */
+    public void setAnalyseProcess(boolean isAnalyseProcess) {
+        this.isAnalyseProcess = isAnalyseProcess;
     }
 }
